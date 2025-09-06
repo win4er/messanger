@@ -1,9 +1,4 @@
-a.exe
-a.out
+*.exe
+*.out
 server
-server.exe
-server.out
 client
-client.exe
-client.out
-
