@@ -9,6 +9,29 @@
 #define SERVER_ADDRESS "127.0.0.1"
 #define SERVER_PORT 4040
 
+void* listen_client(void* arg) {
+    int id_client = *static_cast<int*>(arg);
+    int buff_size = 64;
+    char buffer[buff_size];
+    int amount_recv;
+    while (true) {
+        memset(buffer, 0x00, buff_size);
+        amount_recv = recv(id_client, buffer, buff_size, 0);
+        if (amount_recv == 0) {
+            std::cerr << "Connection with client#" << id_client;
+            std::cerr << " is closed!" << std::endl;
+            return nullptr;
+        } else if (amount_recv < 0) {
+            std::cerr << "Error with data receiving\n";
+        }
+        std::cout << "Message from client#" << id_client;
+        std::cout << ": " << buffer << std::endl;
+    }
+    close(id_client);
+    std::cout << "Client #" << id_client << "is closed" << std::endl;
+    return nullptr;
+}
+
 int main() {
     int server_sock = socket(AF_INET, SOCK_STREAM, 0);
     assert(server_sock > 0); 
@@ -27,17 +50,13 @@ int main() {
     size_t buf_size = 1024;
     char buffer[buf_size];
     int bytes_read;
+    
+    int client_sock;
+    pthread_t id_thread;
     while (true) {
-        int client_sock = accept(server_sock, nullptr, nullptr);
-        memset(buffer, 0x00, buf_size);
-        bytes_read = recv(client_sock, buffer, sizeof(buffer), 0);
-
-        if (bytes_read == 0) {
-            std::cerr << "Connection is closed!\n";
-        } else if (bytes_read < 0) {
-            std::cerr << "Error with data receiving\n";
-        }
-        std::cout << "Message from client: " << buffer << std::endl;
+        client_sock = accept(server_sock, nullptr, nullptr);
+        assert(client_sock > 0);
+        pthread_create(&id_thread, nullptr, listen_client, &client_sock);
     }
 
     close(server_sock);

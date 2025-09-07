@@ -19,14 +19,15 @@ int main() {
     server_addr.sin_addr.s_addr = inet_addr(SERVER_ADDRESS);
 
     int connection = connect(client_sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
-    assert(connection >= 0);
+    assert(connection == 0);
 
     std::cout << "Connected to " << SERVER_ADDRESS;
     std::cout << ":" << SERVER_PORT << std::endl;
-
-    std::string message = "Hello, server!";
-    send(client_sock, message.c_str(), message.size(), 0);
-
+    
+    std::string message;
+    while (std::getline(std::cin, message)) {
+        send(client_sock, message.c_str(), message.size(), 0);
+    }
     close(client_sock);
     std::cout << "Client is closed" << std::endl;
     return 0;
